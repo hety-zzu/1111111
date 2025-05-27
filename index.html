@@ -1,0 +1,44 @@
+// 滑动控制
+let startX, startY;
+const gameContainer = document.getElementById('game-board-container');
+
+// 只在游戏容器内监听触摸事件
+gameContainer.addEventListener('touchstart', (e) => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    e.preventDefault(); // 阻止游戏区域内的默认滚动
+});
+
+gameContainer.addEventListener('touchend', (e) => {
+    const endX = e.changedTouches[0].clientX;
+    const endY = e.changedTouches[0].clientY;
+    
+    const diffX = endX - startX;
+    const diffY = endY - startY;
+    
+    // 忽略微小移动
+    if (Math.sqrt(diffX * diffX + diffY * diffY) < 30) return;
+    
+    // 计算角度（-180° 到 180°）
+    const angle = Math.atan2(diffY, diffX) * 180 / Math.PI;
+    
+    // 将角度映射到四个方向
+    if ((angle >= -45 && angle <= 45) || angle <= -135 || angle >= 135) {
+        // 右 (-45°~45°) 或 左 (135°~180° 或 -180°~-135°)
+        diffX > 0 ? moveRight() : moveLeft();
+    } else {
+        // 下 (45°~135°) 或 上 (-135°~-45°)
+        diffY > 0 ? moveDown() : moveUp();
+    }
+    
+    e.preventDefault();
+});
+
+// 允许非游戏区域的正常滚动
+document.addEventListener('touchmove', (e) => {
+    if (!e.target.closest('#game-board-container')) {
+        // 非游戏区域允许滚动
+        return;
+    }
+    e.preventDefault(); // 游戏区域内阻止滚动
+}, { passive: false });
